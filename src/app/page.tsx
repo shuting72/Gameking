@@ -3,47 +3,47 @@
 import { useState, useEffect, useRef } from "react";
 
 const questionBank = [
-  { question: "貓有四隻腳", answer: false },
-  { question: "狗會飛", answer: true },
-  { question: "電腦需要電", answer: false },
-  { question: "水是固體", answer: true },
-  { question: "太陽會發光", answer: false },
-  { question: "冰淇淋是熱的", answer: true },
-  { question: "人類會呼吸", answer: false },
-  { question: "天空是綠色的", answer: true },
-  { question: "魚會游泳", answer: false },
-  { question: "椅子有兩隻腳", answer: true },
-  { question: "太陽從東邊升起", answer: false },
-  { question: "貓會飛", answer: true },
-  { question: "人有五根手指", answer: false },
-  { question: "魚可以在陸地上呼吸", answer: true },
-  { question: "鳥類會下蛋", answer: false },
-  { question: "一週有七天", answer: true },
-  { question: "蘋果是水果", answer: false },
-  { question: "晚上太陽很亮", answer: true },
-  { question: "地球是圓的", answer: false },
-  { question: "沙漠裡常下雪", answer: true },
-  { question: "火會燙", answer: false },
-  { question: "書本可以吃", answer: true },
-  { question: "香蕉是黃色的", answer: false },
-  { question: "天空是紅色的", answer: true },
-  { question: "水可以喝", answer: false },
-  { question: "冰塊比火還燙", answer: true },
-  { question: "冬天比夏天冷", answer: false },
-  { question: "馬會游泳", answer: true },
-  { question: "鋼琴是樂器", answer: false },
-  { question: "洗衣機可以洗澡", answer: true }
+  { question: "貓有四隻腳", answer: true },
+  { question: "狗會飛", answer: false },
+  { question: "電腦需要電", answer: true },
+  { question: "水是固體", answer: false },
+  { question: "太陽會發光", answer: true },
+  { question: "冰淇淋是熱的", answer: false },
+  { question: "人類會呼吸", answer: true },
+  { question: "天空是綠色的", answer: false },
+  { question: "魚會游泳", answer: true },
+  { question: "椅子有兩隻腳", answer: false },
+  { question: "太陽從東邊升起", answer: true },
+  { question: "貓會飛", answer: false },
+  { question: "人有五根手指", answer: true },
+  { question: "魚可以在陸地上呼吸", answer: false },
+  { question: "鳥類會下蛋", answer: true },
+  { question: "一週有七天", answer: false },
+  { question: "蘋果是水果", answer: true },
+  { question: "晚上太陽很亮", answer: false },
+  { question: "地球是圓的", answer: true },
+  { question: "沙漠裡常下雪", answer: false },
+  { question: "火會燙", answer: true },
+  { question: "書本可以吃", answer: false },
+  { question: "香蕉是黃色的", answer: true },
+  { question: "天空是紅色的", answer: false },
+  { question: "水可以喝", answer: true },
+  { question: "冰塊比火還燙", answer: false },
+  { question: "冬天比夏天冷", answer: true },
+  { question: "馬會游泳", answer: false },
+  { question: "鋼琴是樂器", answer: true },
+  { question: "洗衣機可以洗澡", answer: false }
 ];
 
 const generateQuestion = () => {
   const item = questionBank[Math.floor(Math.random() * questionBank.length)];
   return {
     question: item.question,
-    answer: item.answer
+    answer: item.answer,
   };
 };
 
-export default function WhoIsWrongKing() {
+export default function Home() {
   const [username, setUsername] = useState("");
   const [started, setStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -128,8 +128,4 @@ export default function WhoIsWrongKing() {
       )}
     </div>
   );
-}
-
-export default function WhoIsWrongKing() {
-  // 這邊就是你原本整個遊戲邏輯
 }
