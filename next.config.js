@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 這裡可以加設定，例如：
-  experimental: {
-    appDir: true
-  }
-};
+  // 不需要 experimental.appDir
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
