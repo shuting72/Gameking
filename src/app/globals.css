@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 自訂全域變數 */
 :root {
   --background: #ffffff;
   --foreground: #171717;
