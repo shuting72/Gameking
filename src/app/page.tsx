@@ -129,3 +129,7 @@ export default function WhoIsWrongKing() {
     </div>
   );
 }
+
+export default function WhoIsWrongKing() {
+  // 這邊就是你原本整個遊戲邏輯
+}
