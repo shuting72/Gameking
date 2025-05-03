@@ -71,7 +71,7 @@ export default function Home() {
 
   const handleAnswer = (ans) => {
     if (timeLeft === 0 || !question) return;
-    setScore((prev) => (ans !== question.answer ? prev + 1 : prev - 1));
+    setScore((prev) => (ans !== question.answer ? prev + 1 : Math.max(0, prev - 1)));
     setTotalAnswered((t) => t + 1);
     setQuestion(generateQuestion());
   };
@@ -86,59 +86,64 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-black text-white">
-      <h1 className="text-6xl font-extrabold mb-10 tracking-wide">誰是錯王 👑</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-black text-white font-sans">
+      <h1 className="text-7xl font-extrabold mb-12 tracking-wide drop-shadow-lg">
+        誰是錯王 👑
+      </h1>
 
       {!started && (
-        <div className="w-full max-w-md bg-white text-black rounded-2xl shadow-lg p-8 space-y-4">
+        <div className="w-full max-w-md bg-white text-black rounded-2xl shadow-xl p-10 space-y-5">
           <input
-            className="text-black p-3 border rounded text-lg"
+            className="text-black p-4 border rounded text-xl w-full"
             placeholder="請輸入名字"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <button className="bg-black text-white py-3 rounded text-xl" onClick={handleStart}>
+          <button
+            className="w-full bg-black text-white py-4 rounded text-xl hover:bg-gray-800 transition"
+            onClick={handleStart}
+          >
             開始挑戰
           </button>
-          <div className="text-sm text-gray-600">玩法：一分鐘內答錯越多題越高分！（答對會扣分）</div>
-          <div className="text-sm text-gray-600">
+          <div className="text-base text-gray-600">玩法：一分鐘內答錯越多題越高分！（答對會扣分）</div>
+          <div className="text-base text-gray-600">
             目前最高分：{highScore.name}（{highScore.score} 題）
           </div>
         </div>
       )}
 
       {started && timeLeft > 0 && question && (
-        <div className="flex flex-col items-center gap-6 mt-10">
-          <div className="text-3xl font-medium">剩餘時間：{timeLeft} 秒</div>
-          <div className="text-5xl font-bold text-center px-8 leading-snug">
+        <div className="flex flex-col items-center gap-8 mt-10">
+          <div className="text-4xl font-semibold">剩餘時間：{timeLeft} 秒</div>
+          <div className="text-6xl font-bold text-center px-8 leading-snug drop-shadow">
             {question.question}
           </div>
-          <div className="flex gap-12 mt-4">
+          <div className="flex gap-16 mt-6">
             <button
-              className="bg-green-500 hover:bg-green-600 text-white px-10 py-6 rounded-2xl text-5xl shadow-lg transition"
+              className="bg-green-500 hover:bg-green-600 text-white px-12 py-6 rounded-2xl text-5xl shadow-lg transition"
               onClick={() => handleAnswer(true)}
             >
               O
             </button>
             <button
-              className="bg-red-500 hover:bg-red-600 text-white px-10 py-6 rounded-2xl text-5xl shadow-lg transition"
+              className="bg-red-500 hover:bg-red-600 text-white px-12 py-6 rounded-2xl text-5xl shadow-lg transition"
               onClick={() => handleAnswer(false)}
             >
               X
             </button>
           </div>
-          <div className="text-lg text-gray-300 mt-4">
+          <div className="text-xl text-gray-300 mt-4">
             錯題數：{score} ／ 作答總數：{totalAnswered}
           </div>
         </div>
       )}
 
       {started && timeLeft === 0 && (
-        <div className="text-center mt-12">
-          <h2 className="text-4xl font-bold mb-4">時間到！</h2>
-          <p className="text-2xl">你答錯了 {score} 題，共作答 {totalAnswered} 題。</p>
+        <div className="text-center mt-16">
+          <h2 className="text-5xl font-bold mb-6">時間到！</h2>
+          <p className="text-3xl">你答錯了 {score} 題，共作答 {totalAnswered} 題。</p>
           <button
-            className="mt-6 bg-white text-black px-6 py-3 rounded-xl text-lg"
+            className="mt-8 bg-white text-black px-6 py-4 rounded-xl text-xl hover:bg-gray-200 transition"
             onClick={() => setStarted(false)}
           >
             再玩一次
