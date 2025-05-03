@@ -84,39 +84,46 @@ const questionBank = [
   { question: '唱歌用的是耳朵', answer: false },
   { question: '吃飯要用嘴巴', answer: true }
 ];
-
-const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
+const generateQuestion = () => {
+  const item = questionBank[Math.floor(Math.random() * questionBank.length)];
+  return {
+    question: item.question,
+    answer: item.answer,
+  };
+};
 
 export default function Home() {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
   const [started, setStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
   const [totalAnswered, setTotalAnswered] = useState(0);
-  const [question, setQuestion] = useState(null);
-  const [recentQuestions, setRecentQuestions] = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const timerRef = useRef(null);
-
-  const generateQuestion = () => {
-    const options = questionBank.filter(q => !recentQuestions.includes(q.question));
-    const next = options[Math.floor(Math.random() * options.length)];
-    setRecentQuestions(prev => {
-      const updated = [...prev, next.question];
-      return updated.length > 5 ? updated.slice(-5) : updated;
-    });
-    return next;
-  };
+  const [question, setQuestion] = useState<{ question: string; answer: boolean } | null>(null);
+  const [highScores, setHighScores] = useState<{ name: string; score: number }[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (started && timeLeft > 0) {
-      timerRef.current = setTimeout(() => setTimeLeft(t => t - 1), 1000);
+      timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     } else if (timeLeft === 0 && timerRef.current) {
       clearTimeout(timerRef.current);
-      const newBoard = [...leaderboard, { name: username, score }]
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 3);
-      setLeaderboard(newBoard);
+
+      setHighScores((prev) => {
+        const existingIndex = prev.findIndex((p) => p.name === username);
+        let updated = [...prev];
+
+        if (existingIndex !== -1) {
+          if (score > prev[existingIndex].score) {
+            updated[existingIndex].score = score;
+          }
+        } else {
+          updated.push({ name: username, score });
+        }
+
+        return updated
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3);
+      });
     }
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -124,98 +131,70 @@ export default function Home() {
   }, [timeLeft, started]);
 
   useEffect(() => {
-    if (started && !question) setQuestion(generateQuestion());
+    if (started && !question) {
+      setQuestion(generateQuestion());
+    }
   }, [started, question]);
 
-  const handleAnswer = (ans) => {
+  const handleAnswer = (ans: boolean) => {
     if (timeLeft === 0 || !question) return;
-    setScore(prev => ans !== question.answer ? prev + 1 : Math.max(0, prev - 1));
-    setTotalAnswered(t => t + 1);
+    if (ans !== question.answer) setScore((s) => s + 1);
+    setTotalAnswered((t) => t + 1);
     setQuestion(generateQuestion());
   };
 
   const handleStart = () => {
-    if (!username) return alert('請輸入名字');
+    if (!username) return alert("請輸入名字");
     setStarted(true);
     setTimeLeft(60);
     setScore(0);
     setTotalAnswered(0);
     setQuestion(generateQuestion());
-    setRecentQuestions([]);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-black text-white font-sans">
-      <h1 className="text-6xl font-extrabold mb-6 tracking-wide drop-shadow">誰是錯王 👑</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <h1 className="text-4xl font-bold mb-6">誰是錯王 👑</h1>
 
-      {/* 排行榜 */}
-      <div className="bg-white text-black rounded-2xl shadow-lg p-6 w-full max-w-md mb-6">
-        <h2 className="text-2xl font-bold mb-4">排行榜</h2>
-        {leaderboard.length === 0 ? <p>暫無紀錄</p> : (
-          <ul className="space-y-2">
-            {leaderboard.map((entry, idx) => (
-              <li key={idx} className="flex justify-between text-lg">
-                <span>{idx + 1}. {entry.name}</span>
-                <span>{entry.score} 分</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* 遊戲開始區塊 */}
       {!started && (
-        <div className="w-full max-w-md bg-white text-black rounded-2xl shadow-lg p-8 space-y-4">
+        <div className="w-full max-w-sm bg-white rounded-xl shadow p-6 flex flex-col gap-4">
+          <div>
+            <div className="font-semibold mb-2">排行榜</div>
+            {highScores.map((entry, index) => (
+              <div key={index} className="flex justify-between">
+                <span>{index + 1}. {entry.name}</span>
+                <span>{entry.score} 分</span>
+              </div>
+            ))}
+          </div>
           <input
-            className="text-black p-3 border rounded text-lg w-full"
+            className="text-black p-2 border rounded"
             placeholder="請輸入名字"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <button
-            className="bg-black text-white py-3 rounded text-xl w-full hover:bg-gray-800 transition"
-            onClick={handleStart}
-          >
-            開始挑戰
-          </button>
-          <p className="text-gray-600 text-sm">玩法：一分鐘內答錯越多題越高分！（答對會扣分）</p>
+          <button className="bg-black text-white py-2 rounded text-lg" onClick={handleStart}>開始挑戰</button>
+          <div className="text-sm text-gray-500">玩法：一分鐘內答錯越多題越高分！（答對會扣分）</div>
         </div>
       )}
 
       {started && timeLeft > 0 && question && (
-        <div className="flex flex-col items-center gap-8 mt-10">
-          <div className="text-4xl font-semibold">剩餘時間：{timeLeft} 秒</div>
-          <div className="text-5xl font-bold text-center px-8 leading-snug drop-shadow">
-            {question.question}
+        <div className="flex flex-col items-center gap-4 mt-6">
+          <div className="text-xl">剩餘時間：{timeLeft} 秒</div>
+          <div className="text-3xl font-semibold text-center px-4">{question.question}</div>
+          <div className="flex gap-8 mt-4">
+            <button className="bg-green-500 text-white px-8 py-4 rounded text-4xl" onClick={() => handleAnswer(true)}>O</button>
+            <button className="bg-red-500 text-white px-8 py-4 rounded text-4xl" onClick={() => handleAnswer(false)}>X</button>
           </div>
-          <div className="flex gap-12 mt-4">
-            <button
-              className="bg-green-500 hover:bg-green-600 text-white px-10 py-6 rounded-2xl text-5xl shadow-lg transition"
-              onClick={() => handleAnswer(true)}
-            >
-              O
-            </button>
-            <button
-              className="bg-red-500 hover:bg-red-600 text-white px-10 py-6 rounded-2xl text-5xl shadow-lg transition"
-              onClick={() => handleAnswer(false)}
-            >
-              X
-            </button>
-          </div>
-          <div className="text-lg text-gray-300 mt-4">錯題數：{score} ／ 作答總數：{totalAnswered}</div>
+          <div className="text-sm text-gray-500 mt-2">錯題數：{score} ／ 作答總數：{totalAnswered}</div>
         </div>
       )}
 
       {started && timeLeft === 0 && (
-        <div className="text-center mt-12">
-          <h2 className="text-4xl font-bold mb-4">時間到！</h2>
-          <p className="text-2xl">你答錯了 {score} 題，共作答 {totalAnswered} 題。</p>
-          <button
-            className="mt-6 bg-white text-black px-6 py-3 rounded-xl text-lg hover:bg-gray-200 transition"
-            onClick={() => setStarted(false)}
-          >
-            再玩一次
-          </button>
+        <div className="text-center mt-6">
+          <h2 className="text-2xl font-bold mb-2">時間到！</h2>
+          <p className="text-lg">你答錯了 {score} 題，共作答 {totalAnswered} 題。</p>
+          <button className="mt-4 bg-black text-white px-4 py-2 rounded" onClick={() => setStarted(false)}>再玩一次</button>
         </div>
       )}
     </div>
