@@ -7,7 +7,7 @@ const questionBank = [
   { question: '狗會飛', answer: false },
   { question: '電腦需要電', answer: true },
   { question: '水是固體', answer: false },
-  { question: '太陽會發光', answer: true },
+  { question: '太陽是地球的主要光源', answer: true },
   { question: '冰淇淋是熱的', answer: false },
   { question: '人類會呼吸', answer: true },
   { question: '天空是綠色的', answer: false },
