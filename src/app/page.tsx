@@ -30,7 +30,7 @@ const questionBank = [
   { question: '水可以喝', answer: true },
   { question: '冰塊比火還燙', answer: false },
   { question: '冬天比夏天冷', answer: true },
-  { question: '馬會游泳', answer: false },
+  { question: '馬會潛水', answer: false },
   { question: '鋼琴是樂器', answer: true },
   { question: '洗衣機可以洗澡', answer: false },
   { question: '眼睛是用來看的', answer: true },
@@ -58,21 +58,39 @@ const questionBank = [
   { question: '北極熊生活在南極', answer: false },
   { question: '馬鈴薯長在地底下', answer: true },
   { question: '彩虹有七種顏色', answer: true },
-  { question: '人類有兩顆心臟', answer: false },
-  { question: "一加一等於三", answer: false },
-  { question: "中國的首都是北京", answer: true },
-  { question: "月亮本身會發光", answer: false },
-  { question: "風是看不見的", answer: true },
-  { question: "地球繞著太陽轉", answer: true },
-  { question: "日本是一個島國", answer: true },
-  { question: "海水是鹹的", answer: true },
-  { question: "豬會下蛋", answer: false },
-  { question: "橘子是藍色的", answer: false },
-  { question: "人的心臟在右邊", answer: false },
+  { question: '一加一等於三', answer: false },
+  { question: '中國的首都是北京', answer: true },
+  { question: '月亮本身會發光', answer: false },
+  { question: '風是看不見的', answer: true },
+  { question: '地球繞著太陽轉', answer: true },
+  { question: '日本是一個島國', answer: true },
+  { question: '海水是鹹的', answer: true },
+  { question: '豬會下蛋', answer: false },
+  { question: '橘子是藍色的', answer: false },
+  { question: "三角形有四條邊", answer: false },
+  { question: "1公斤鐵和1公斤棉花一樣重", answer: true },
+  { question: "法國在歐洲", answer: true },
+  { question: "金字塔在埃及", answer: true },
+  { question: "紐約是美國的首都", answer: false },
+  { question: "跑比走慢", answer: false },
+  { question: "老虎是貓科動物", answer: true },
+  { question: "5G比4G慢", answer: false },
+  { question: "清朝比民國早", answer: true },
+  { question: "一世紀有100年", answer: true },
+  { question: "吉他是四條弦", answer: false },
+  { question: "聖誕節是12月25日", answer: true },
+  { question: "端午節會划龍舟", answer: true },
+  { question: "檸檬是酸的", answer: true },
+  { question: "唱歌用的是耳朵", answer: false },
+  { question: "吃飯要用嘴巴", answer: true },
 ];
 
-const generateQuestion = () => {
-  return questionBank[Math.floor(Math.random() * questionBank.length)];
+const generateQuestion = (recent: string[]) => {
+  let item;
+  do {
+    item = questionBank[Math.floor(Math.random() * questionBank.length)];
+  } while (recent.includes(item.question));
+  return item;
 };
 
 export default function Home() {
@@ -81,9 +99,10 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
   const [totalAnswered, setTotalAnswered] = useState(0);
-  const [question, setQuestion] = useState(null);
+  const [question, setQuestion] = useState<{ question: string; answer: boolean } | null>(null);
+  const [recentQuestions, setRecentQuestions] = useState<string[]>([]);
   const [highScore, setHighScore] = useState({ name: '', score: 0 });
-  const timerRef = useRef(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (started && timeLeft > 0) {
@@ -101,15 +120,19 @@ export default function Home() {
 
   useEffect(() => {
     if (started && !question) {
-      setQuestion(generateQuestion());
+      const newQ = generateQuestion(recentQuestions);
+      setQuestion(newQ);
+      setRecentQuestions((prev) => [newQ.question, ...prev.slice(0, 4)]);
     }
   }, [started, question]);
 
-  const handleAnswer = (ans) => {
+  const handleAnswer = (ans: boolean) => {
     if (timeLeft === 0 || !question) return;
     setScore((prev) => (ans !== question.answer ? prev + 1 : Math.max(0, prev - 1)));
     setTotalAnswered((t) => t + 1);
-    setQuestion(generateQuestion());
+    const newQ = generateQuestion(recentQuestions);
+    setQuestion(newQ);
+    setRecentQuestions((prev) => [newQ.question, ...prev.slice(0, 4)]);
   };
 
   const handleStart = () => {
@@ -118,14 +141,14 @@ export default function Home() {
     setTimeLeft(60);
     setScore(0);
     setTotalAnswered(0);
-    setQuestion(generateQuestion());
+    const firstQ = generateQuestion([]);
+    setQuestion(firstQ);
+    setRecentQuestions([firstQ.question]);
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-black text-white font-sans">
-      <h1 className="text-7xl font-extrabold mb-12 tracking-wide drop-shadow-lg">
-        誰是錯王 👑
-      </h1>
+      <h1 className="text-7xl font-extrabold mb-12 tracking-wide drop-shadow-lg">誰是錯王 👑</h1>
 
       {!started && (
         <div className="w-full max-w-md bg-white text-black rounded-2xl shadow-xl p-10 space-y-5">
@@ -142,18 +165,14 @@ export default function Home() {
             開始挑戰
           </button>
           <div className="text-base text-gray-600">玩法：一分鐘內答錯越多題越高分！（答對會扣分）</div>
-          <div className="text-base text-gray-600">
-            目前最高分：{highScore.name}（{highScore.score} 題）
-          </div>
+          <div className="text-base text-gray-600">目前最高分：{highScore.name}（{highScore.score} 題）</div>
         </div>
       )}
 
       {started && timeLeft > 0 && question && (
         <div className="flex flex-col items-center gap-8 mt-10">
           <div className="text-4xl font-semibold">剩餘時間：{timeLeft} 秒</div>
-          <div className="text-6xl font-bold text-center px-8 leading-snug drop-shadow">
-            {question.question}
-          </div>
+          <div className="text-6xl font-bold text-center px-8 leading-snug drop-shadow">{question.question}</div>
           <div className="flex gap-16 mt-6">
             <button
               className="bg-green-500 hover:bg-green-600 text-white px-12 py-6 rounded-2xl text-5xl shadow-lg transition"
