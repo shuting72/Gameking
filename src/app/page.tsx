@@ -67,31 +67,25 @@ const questionBank = [
   { question: '海水是鹹的', answer: true },
   { question: '豬會下蛋', answer: false },
   { question: '橘子是藍色的', answer: false },
-  { question: "三角形有四條邊", answer: false },
-  { question: "1公斤鐵和1公斤棉花一樣重", answer: true },
-  { question: "法國在歐洲", answer: true },
-  { question: "金字塔在埃及", answer: true },
-  { question: "紐約是美國的首都", answer: false },
-  { question: "跑比走慢", answer: false },
-  { question: "老虎是貓科動物", answer: true },
-  { question: "5G比4G慢", answer: false },
-  { question: "清朝比民國早", answer: true },
-  { question: "一世紀有100年", answer: true },
-  { question: "吉他是四條弦", answer: false },
-  { question: "聖誕節是12月25日", answer: true },
-  { question: "端午節會划龍舟", answer: true },
-  { question: "檸檬是酸的", answer: true },
-  { question: "唱歌用的是耳朵", answer: false },
-  { question: "吃飯要用嘴巴", answer: true },
+  { question: '三角形有四條邊', answer: false },
+  { question: '1公斤鐵和1公斤棉花一樣重', answer: true },
+  { question: '法國在歐洲', answer: true },
+  { question: '金字塔在埃及', answer: true },
+  { question: '紐約是美國的首都', answer: false },
+  { question: '跑比走慢', answer: false },
+  { question: '老虎是貓科動物', answer: true },
+  { question: '5G比4G慢', answer: false },
+  { question: '清朝比民國早', answer: true },
+  { question: '一世紀有100年', answer: true },
+  { question: '吉他是四條弦', answer: false },
+  { question: '聖誕節是12月25日', answer: true },
+  { question: '端午節會划龍舟', answer: true },
+  { question: '檸檬是酸的', answer: true },
+  { question: '唱歌用的是耳朵', answer: false },
+  { question: '吃飯要用嘴巴', answer: true }
 ];
 
-const generateQuestion = (recent: string[]) => {
-  let item;
-  do {
-    item = questionBank[Math.floor(Math.random() * questionBank.length)];
-  } while (recent.includes(item.question));
-  return item;
-};
+const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
 
 export default function Home() {
   const [username, setUsername] = useState('');
@@ -99,19 +93,30 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
   const [totalAnswered, setTotalAnswered] = useState(0);
-  const [question, setQuestion] = useState<{ question: string; answer: boolean } | null>(null);
-  const [recentQuestions, setRecentQuestions] = useState<string[]>([]);
-  const [highScore, setHighScore] = useState({ name: '', score: 0 });
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [question, setQuestion] = useState(null);
+  const [recentQuestions, setRecentQuestions] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const timerRef = useRef(null);
+
+  const generateQuestion = () => {
+    const options = questionBank.filter(q => !recentQuestions.includes(q.question));
+    const next = options[Math.floor(Math.random() * options.length)];
+    setRecentQuestions(prev => {
+      const updated = [...prev, next.question];
+      return updated.length > 5 ? updated.slice(-5) : updated;
+    });
+    return next;
+  };
 
   useEffect(() => {
     if (started && timeLeft > 0) {
-      timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
+      timerRef.current = setTimeout(() => setTimeLeft(t => t - 1), 1000);
     } else if (timeLeft === 0 && timerRef.current) {
       clearTimeout(timerRef.current);
-      if (score > highScore.score) {
-        setHighScore({ name: username, score });
-      }
+      const newBoard = [...leaderboard, { name: username, score }]
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+      setLeaderboard(newBoard);
     }
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -119,20 +124,14 @@ export default function Home() {
   }, [timeLeft, started]);
 
   useEffect(() => {
-    if (started && !question) {
-      const newQ = generateQuestion(recentQuestions);
-      setQuestion(newQ);
-      setRecentQuestions((prev) => [newQ.question, ...prev.slice(0, 4)]);
-    }
+    if (started && !question) setQuestion(generateQuestion());
   }, [started, question]);
 
-  const handleAnswer = (ans: boolean) => {
+  const handleAnswer = (ans) => {
     if (timeLeft === 0 || !question) return;
-    setScore((prev) => (ans !== question.answer ? prev + 1 : Math.max(0, prev - 1)));
-    setTotalAnswered((t) => t + 1);
-    const newQ = generateQuestion(recentQuestions);
-    setQuestion(newQ);
-    setRecentQuestions((prev) => [newQ.question, ...prev.slice(0, 4)]);
+    setScore(prev => ans !== question.answer ? prev + 1 : Math.max(0, prev - 1));
+    setTotalAnswered(t => t + 1);
+    setQuestion(generateQuestion());
   };
 
   const handleStart = () => {
@@ -141,64 +140,78 @@ export default function Home() {
     setTimeLeft(60);
     setScore(0);
     setTotalAnswered(0);
-    const firstQ = generateQuestion([]);
-    setQuestion(firstQ);
-    setRecentQuestions([firstQ.question]);
+    setQuestion(generateQuestion());
+    setRecentQuestions([]);
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-black text-white font-sans">
-      <h1 className="text-7xl font-extrabold mb-12 tracking-wide drop-shadow-lg">誰是錯王 👑</h1>
+      <h1 className="text-6xl font-extrabold mb-6 tracking-wide drop-shadow">誰是錯王 👑</h1>
 
+      {/* 排行榜 */}
+      <div className="bg-white text-black rounded-2xl shadow-lg p-6 w-full max-w-md mb-6">
+        <h2 className="text-2xl font-bold mb-4">排行榜</h2>
+        {leaderboard.length === 0 ? <p>暫無紀錄</p> : (
+          <ul className="space-y-2">
+            {leaderboard.map((entry, idx) => (
+              <li key={idx} className="flex justify-between text-lg">
+                <span>{idx + 1}. {entry.name}</span>
+                <span>{entry.score} 分</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* 遊戲開始區塊 */}
       {!started && (
-        <div className="w-full max-w-md bg-white text-black rounded-2xl shadow-xl p-10 space-y-5">
+        <div className="w-full max-w-md bg-white text-black rounded-2xl shadow-lg p-8 space-y-4">
           <input
-            className="text-black p-4 border rounded text-xl w-full"
+            className="text-black p-3 border rounded text-lg w-full"
             placeholder="請輸入名字"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
           <button
-            className="w-full bg-black text-white py-4 rounded text-xl hover:bg-gray-800 transition"
+            className="bg-black text-white py-3 rounded text-xl w-full hover:bg-gray-800 transition"
             onClick={handleStart}
           >
             開始挑戰
           </button>
-          <div className="text-base text-gray-600">玩法：一分鐘內答錯越多題越高分！（答對會扣分）</div>
-          <div className="text-base text-gray-600">目前最高分：{highScore.name}（{highScore.score} 題）</div>
+          <p className="text-gray-600 text-sm">玩法：一分鐘內答錯越多題越高分！（答對會扣分）</p>
         </div>
       )}
 
       {started && timeLeft > 0 && question && (
         <div className="flex flex-col items-center gap-8 mt-10">
           <div className="text-4xl font-semibold">剩餘時間：{timeLeft} 秒</div>
-          <div className="text-6xl font-bold text-center px-8 leading-snug drop-shadow">{question.question}</div>
-          <div className="flex gap-16 mt-6">
+          <div className="text-5xl font-bold text-center px-8 leading-snug drop-shadow">
+            {question.question}
+          </div>
+          <div className="flex gap-12 mt-4">
             <button
-              className="bg-green-500 hover:bg-green-600 text-white px-12 py-6 rounded-2xl text-5xl shadow-lg transition"
+              className="bg-green-500 hover:bg-green-600 text-white px-10 py-6 rounded-2xl text-5xl shadow-lg transition"
               onClick={() => handleAnswer(true)}
             >
               O
             </button>
             <button
-              className="bg-red-500 hover:bg-red-600 text-white px-12 py-6 rounded-2xl text-5xl shadow-lg transition"
+              className="bg-red-500 hover:bg-red-600 text-white px-10 py-6 rounded-2xl text-5xl shadow-lg transition"
               onClick={() => handleAnswer(false)}
             >
               X
             </button>
           </div>
-          <div className="text-xl text-gray-300 mt-4">
-            錯題數：{score} ／ 作答總數：{totalAnswered}
-          </div>
+          <div className="text-lg text-gray-300 mt-4">錯題數：{score} ／ 作答總數：{totalAnswered}</div>
         </div>
       )}
 
       {started && timeLeft === 0 && (
-        <div className="text-center mt-16">
-          <h2 className="text-5xl font-bold mb-6">時間到！</h2>
-          <p className="text-3xl">你答錯了 {score} 題，共作答 {totalAnswered} 題。</p>
+        <div className="text-center mt-12">
+          <h2 className="text-4xl font-bold mb-4">時間到！</h2>
+          <p className="text-2xl">你答錯了 {score} 題，共作答 {totalAnswered} 題。</p>
           <button
-            className="mt-8 bg-white text-black px-6 py-4 rounded-xl text-xl hover:bg-gray-200 transition"
+            className="mt-6 bg-white text-black px-6 py-3 rounded-xl text-lg hover:bg-gray-200 transition"
             onClick={() => setStarted(false)}
           >
             再玩一次
