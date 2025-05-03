@@ -51,6 +51,7 @@ export default function Home() {
   const [totalAnswered, setTotalAnswered] = useState(0);
   const [question, setQuestion] = useState<{ question: string; answer: boolean } | null>(null);
   const [highScore, setHighScore] = useState({ name: "", score: 0 });
+  const [wrongStreak, setWrongStreak] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -75,7 +76,21 @@ export default function Home() {
 
   const handleAnswer = (ans: boolean) => {
     if (timeLeft === 0 || !question) return;
-    if (ans !== question.answer) setScore((s) => s + 1);
+
+    if (ans !== question.answer) {
+      setScore((s) => s + 1); // 答錯得分
+      setWrongStreak((w) => w + 1);
+    } else {
+      setScore((s) => Math.max(0, s - 1)); // 答對扣分，最低為 0
+      setWrongStreak(0);
+    }
+
+    if (wrongStreak >= 4) {
+      alert("你已連錯 5 題，請認真作答！");
+      setStarted(false);
+      return;
+    }
+
     setTotalAnswered((t) => t + 1);
     setQuestion(generateQuestion());
   };
@@ -86,46 +101,68 @@ export default function Home() {
     setTimeLeft(60);
     setScore(0);
     setTotalAnswered(0);
+    setWrongStreak(0);
     setQuestion(generateQuestion());
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-4xl font-bold mb-6">誰是錯王 👑</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-black text-white">
+      <h1 className="text-6xl font-bold mb-8">誰是錯王 👑</h1>
 
       {!started && (
-        <div className="w-full max-w-sm bg-white rounded-xl shadow p-6 flex flex-col gap-4">
+        <div className="w-full max-w-sm bg-white text-black rounded-xl shadow p-6 flex flex-col gap-4">
           <input
-            className="text-black p-2 border rounded"
+            className="p-3 border rounded text-lg"
             placeholder="請輸入名字"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <button className="bg-black text-white py-2 rounded text-lg" onClick={handleStart}>開始挑戰</button>
-          <div className="text-sm text-gray-500">玩法：一分鐘內答錯越多題越高分！</div>
+          <button className="bg-black text-white py-3 rounded text-xl" onClick={handleStart}>
+            開始挑戰
+          </button>
+          <div className="text-sm text-gray-500">玩法：答錯加分，答對扣分，亂猜會被抓到哦！</div>
           <div className="text-sm text-gray-500">目前最高分：{highScore.name}（{highScore.score} 題）</div>
         </div>
       )}
 
       {started && timeLeft > 0 && question && (
-        <div className="flex flex-col items-center gap-4 mt-6">
-          <div className="text-xl">剩餘時間：{timeLeft} 秒</div>
-          <div className="text-3xl font-semibold text-center px-4">{question.question}</div>
-          <div className="flex gap-8 mt-4">
-            <button className="bg-green-500 text-white px-8 py-4 rounded text-4xl" onClick={() => handleAnswer(true)}>O</button>
-            <button className="bg-red-500 text-white px-8 py-4 rounded text-4xl" onClick={() => handleAnswer(false)}>X</button>
+        <div className="flex flex-col items-center gap-6 mt-8">
+          <div className="text-2xl">剩餘時間：{timeLeft} 秒</div>
+          <div className="text-5xl font-bold text-center px-6">{question.question}</div>
+          <div className="flex gap-12 mt-4">
+            <button
+              className="bg-green-500 text-white px-12 py-6 rounded text-5xl"
+              onClick={() => handleAnswer(true)}
+            >
+              O
+            </button>
+            <button
+              className="bg-red-500 text-white px-12 py-6 rounded text-5xl"
+              onClick={() => handleAnswer(false)}
+            >
+              X
+            </button>
           </div>
-          <div className="text-sm text-gray-500 mt-2">錯題數：{score} ／ 作答總數：{totalAnswered}</div>
+          <div className="text-base text-gray-400 mt-2">
+            錯題數：{score} ／ 作答總數：{totalAnswered}
+          </div>
         </div>
       )}
 
       {started && timeLeft === 0 && (
-        <div className="text-center mt-6">
-          <h2 className="text-2xl font-bold mb-2">時間到！</h2>
-          <p className="text-lg">你答錯了 {score} 題，共作答 {totalAnswered} 題。</p>
-          <button className="mt-4 bg-black text-white px-4 py-2 rounded" onClick={() => setStarted(false)}>再玩一次</button>
+        <div className="text-center mt-8">
+          <h2 className="text-3xl font-bold mb-4">時間到！</h2>
+          <p className="text-xl">你答錯了 {score} 題，共作答 {totalAnswered} 題。</p>
+          <button
+            className="mt-6 bg-white text-black px-6 py-3 rounded text-lg"
+            onClick={() => setStarted(false)}
+          >
+            再玩一次
+          </button>
         </div>
       )}
     </div>
   );
+}
+
 }
