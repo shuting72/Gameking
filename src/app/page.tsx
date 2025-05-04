@@ -99,7 +99,7 @@ const questionBank = [
   { question: "BTS 是韓國男團", answer: true },
   { question: "皮卡丘最常說的是『Pika Pika』", answer: true },
   { question: "火影忍者的九尾是狗", answer: false },
-  { question: "泰勒絲是一位搖滾樂手", answer: false }
+  { question: "泰勒絲是一位搖滾樂手", answer: false }，
 ];
 
 const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
