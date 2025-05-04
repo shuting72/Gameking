@@ -82,7 +82,7 @@ const questionBank = [
   { question: '端午節會划龍舟', answer: true },
   { question: '檸檬是酸的', answer: true },
   { question: '唱歌用的是耳朵', answer: false },
-  { question: '吃飯要用嘴巴', answer: true }
+  { question: '吃飯要用嘴巴', answer: true }，
   { question: "周杰倫是日本人", answer: false },
   { question: "皮卡丘是藍色的", answer: false },
   { question: "哈利波特騎的是掃把", answer: true },
