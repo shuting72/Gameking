@@ -83,6 +83,23 @@ const questionBank = [
   { question: '檸檬是酸的', answer: true },
   { question: '唱歌用的是耳朵', answer: false },
   { question: '吃飯要用嘴巴', answer: true }
+  { question: "周杰倫是日本人", answer: false },
+  { question: "皮卡丘是藍色的", answer: false },
+  { question: "哈利波特騎的是掃把", answer: true },
+  { question: "五月天是一部動漫", answer: false },
+  { question: "灌籃高手的主角是櫻木花道", answer: true },
+  { question: "BLACKPINK 是四個人組成的團體", answer: true },
+  { question: "名偵探柯南真實身份是毛利小五郎", answer: false },
+  { question: "鋼鐵人是復仇者聯盟的一員", answer: true },
+  { question: "冰雪奇緣的主角是安娜和艾莎", answer: true },
+  { question: "Snoopy 是隻貓", answer: false },
+  { question: "新海誠是音樂製作人", answer: false },
+  { question: "蜘蛛人能射出蜘蛛絲", answer: true },
+  { question: "《青花瓷》是周杰倫唱的", answer: true },
+  { question: "BTS 是韓國男團", answer: true },
+  { question: "皮卡丘最常說的是『Pika Pika』", answer: true },
+  { question: "火影忍者的九尾是狗", answer: false },
+  { question: "泰勒絲是一位搖滾樂手", answer: false }
 ];
 
 const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
