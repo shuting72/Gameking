@@ -154,7 +154,7 @@ export default function Home() {
   const handleStart = () => {
     if (!username) return alert('請輸入名字');
     setStarted(true);
-    setTimeLeft(60);
+    setTimeLeft(30);
     setScore(0);
     setTotalAnswered(0);
     setQuestion(generateQuestion());
